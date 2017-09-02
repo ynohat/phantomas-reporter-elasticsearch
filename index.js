@@ -15,6 +15,8 @@
  */
 'use strict';
 
+const DEFAULT_ES_API_VERSION = "5.5";
+
 module.exports = function(results, reporterOptions, options) {
 	var debug = require('debug')('phantomas:reporter:elasticsearch'),
 		params;
@@ -25,12 +27,14 @@ module.exports = function(results, reporterOptions, options) {
 		options['elasticsearch-port'] = reporterOptions[1];
 		options['elasticsearch-index'] = reporterOptions[2];
 		options['elasticsearch-type'] = reporterOptions[3];
+		options['elasticsearch-api'] = reporterOptions[4];
 	}
 
 	params = {
 		host: (options['elasticsearch-host'] || 'localhost') + ':' + (options['elasticsearch-port'] || 9200),
 		type: (options['elasticsearch-type'] || 'report'),
-		index: (options['elasticsearch-index'] || 'phantomas')
+		index: (options['elasticsearch-index'] || 'phantomas'),
+		apiVersion: (options['elasticsearch-api'] || DEFAULT_ES_API_VERSION)
 	};
 
 	debug('Parameters: %j', params);
@@ -40,7 +44,8 @@ module.exports = function(results, reporterOptions, options) {
 		render: function(done) {
 			var elasticsearch = require('elasticsearch'),
 				client = new elasticsearch.Client({
-					host: params.host
+					host: params.host,
+					apiVersion: params.apiVersion
 				}),
 				metrics = results.getMetricsNames(),
 				documentBody = {
@@ -58,10 +63,9 @@ module.exports = function(results, reporterOptions, options) {
 				};
 			// create and index an elasticsearch document with metrics data
 			function indexReport(documentBody) {
-				client.create({
+				client.index({
 					index: params.index,
 					type: params.type,
-					id: '',
 					body: documentBody
 				}, function(error, data) {
 					if (typeof error != "undefined") {
