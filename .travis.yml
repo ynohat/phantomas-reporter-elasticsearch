@@ -10,6 +10,7 @@ node_js:
 services:
   - elasticsearch # v1.4.0
 
+
 # We want the latest ES
 before_install:
   - curl -o es.deb https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.5.2.deb && sudo dpkg -i --force-confnew es.deb && sudo service elasticsearch restart
